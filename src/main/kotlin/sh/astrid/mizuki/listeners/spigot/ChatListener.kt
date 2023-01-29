@@ -1,20 +1,19 @@
 package sh.astrid.mizuki.listeners.spigot
 
-import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
-import org.bukkit.event.Listener
-import org.bukkit.event.player.AsyncPlayerChatEvent
-import sh.astrid.mizuki.Mizuki
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents
+import net.minecraft.network.message.MessageType.Parameters
+import net.minecraft.network.message.SignedMessage
+import net.minecraft.server.network.ServerPlayerEntity
 import sh.astrid.mizuki.lib.*
+import sh.astrid.mizuki.listeners.AsyncChatEvent
 
-class ChatListener : Listener {
+class ChatListener {
     init {
-        Mizuki.instance.server.pluginManager.registerEvents(this, Mizuki.instance)
+        ServerMessageEvents.ALLOW_CHAT_MESSAGE.register(::onChat)
     }
 
-    @EventHandler(priority = EventPriority.LOW)
-    fun onChat(event: AsyncPlayerChatEvent) {
-        if(event.isCancelled) return
-        sendWebhook(buildMsg(event, "chat"))
+    private fun onChat(message: SignedMessage, player: ServerPlayerEntity, params: Parameters): Boolean {
+        sendWebhook(buildMsg(AsyncChatEvent(player, message.content.string), "chat"))
+        return true
     }
 }

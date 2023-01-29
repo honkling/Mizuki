@@ -1,25 +1,33 @@
 package sh.astrid.mizuki.commands
 
-import org.bukkit.command.Command
-import org.bukkit.command.CommandExecutor
-import org.bukkit.command.CommandSender
-import org.bukkit.command.ConsoleCommandSender
-import org.bukkit.entity.Player
+import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
+import com.mojang.brigadier.context.CommandContext
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback
+import net.fabricmc.loader.api.FabricLoader
+import net.minecraft.command.CommandSource
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.command.ServerCommandSource
+import net.minecraft.text.Text
 import sh.astrid.mizuki.Mizuki
 
-class Reload : CommandExecutor {
+class Reload {
     init {
-        Mizuki.instance.getCommand("reload")!!.setExecutor(this);
+        CommandRegistrationCallback.EVENT.register { dispatcher, _, _ ->
+            dispatcher.register(literal<ServerCommandSource>("mizuki")
+                .then(literal<ServerCommandSource>("reload")
+                    .executes(::onCommand)))
+        }
     }
 
-    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
-        val canExecute = (sender is ConsoleCommandSender || sender is Player && sender.isOp)
-        if(!canExecute) return false
+    fun onCommand(ctx: CommandContext<ServerCommandSource>): Int {
+        val sender = ctx.source
+        val manager = sender.server.playerManager
 
-        Mizuki.instance.reloadConfig();
+        if (!sender.isExecutedByPlayer || manager.isOperator(sender.player!!.gameProfile)) return 0
 
-        sender.sendMessage("[Mizuki] Successfully reloaded config.")
+        Mizuki.instance.reloadConfig()
+        sender.sendMessage(Text.literal("[Mizuki] Successfully reloaded config."))
 
-        return true
+        return 1
     }
 }

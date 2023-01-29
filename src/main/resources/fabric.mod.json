@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "mizuki",
+  "version": "${version}",
+  "name": "Mizuki",
+  "authors": [
+    "astrid",
+    "honkling"
+  ],
+  "environment": "server",
+  "entrypoints": {
+    "server": [
+      "sh.astrid.mizuki.Mizuki"
+    ]
+  },
+  "mixins": [
+    "mizuki.mixins.json"
+  ],
+  "depends": {
+    "minecraft": ">=1.19",
+    "fabricloader": ">=0.14.13",
+    "fabric-language-kotlin": "*",
+    "fabric": "*"
+  }
+}

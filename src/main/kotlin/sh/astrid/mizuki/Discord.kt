@@ -8,7 +8,7 @@ import sh.astrid.mizuki.listeners.discord.ChatListener
 import sh.astrid.mizuki.listeners.discord.CommandListener
 
 object Discord {
-    lateinit var api: DiscordApi;
+    lateinit var api: DiscordApi
     var chatChannel: TextChannel? = null
     var isConnected: Boolean = false
 
@@ -17,7 +17,7 @@ object Discord {
         val channel = Mizuki.instance.config.getString("channelID")
 
         if (token != null && token.isEmpty()) {
-            throw Exception("No token specified! Please enter a token in config.yml.")
+            throw Exception("No token specified! Please enter a token in config.toml.")
         }
 
         api = DiscordApiBuilder()

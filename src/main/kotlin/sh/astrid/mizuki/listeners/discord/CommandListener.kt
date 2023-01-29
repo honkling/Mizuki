@@ -9,6 +9,7 @@ import org.javacord.api.event.message.MessageCreateEvent
 import sh.astrid.mizuki.Discord
 import sh.astrid.mizuki.Discord.chatChannel
 import sh.astrid.mizuki.Mizuki
+import sh.astrid.mizuki.lib.set
 import java.time.Duration
 
 
@@ -57,7 +58,7 @@ class CommandListener {
                 .setAvatar(Discord.api.yourself.avatar)
                 .create().join()
 
-            config.set("webhookID", webhook.id)
+            config.set("webhookID", webhook.id.toString())
         }
 
         Mizuki.instance.saveConfig()

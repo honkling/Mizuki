@@ -1,25 +1,24 @@
 package sh.astrid.mizuki.listeners.spigot
 
-import org.bukkit.event.EventHandler
-import sh.astrid.mizuki.Mizuki
-import org.bukkit.event.Listener
-import org.bukkit.event.player.PlayerJoinEvent
-import org.bukkit.event.player.PlayerQuitEvent
+import net.fabricmc.fabric.api.networking.v1.PacketSender
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import sh.astrid.mizuki.lib.*
+import sh.astrid.mizuki.listeners.PlayerEvent
 
-class PlayerListener : Listener {
+class PlayerListener {
+
     init {
-        Mizuki.instance.server.pluginManager.registerEvents(this, Mizuki.instance)
+        ServerPlayConnectionEvents.JOIN.register(::onJoin)
+        ServerPlayConnectionEvents.DISCONNECT.register(::onLeave)
     }
 
-    @EventHandler
-    fun onJoin(event: PlayerJoinEvent) {
-        if(event.player.hasPlayedBefore()) sendWebhook(buildMsg(event, "join"))
-        else sendWebhook(buildMsg(event, "firstjoin"))
+    private fun onJoin(handler: ServerPlayNetworkHandler, _sender: PacketSender, _server: MinecraftServer) {
+        sendWebhook(buildMsg(PlayerEvent(handler.player), "join"))
     }
 
-    @EventHandler
-    fun onLeave(event: PlayerQuitEvent) {
-        sendWebhook(buildMsg(event, "leave"))
+    private fun onLeave(handler: ServerPlayNetworkHandler, _server: MinecraftServer) {
+        sendWebhook(buildMsg(PlayerEvent(handler.player), "leave"))
     }
 }

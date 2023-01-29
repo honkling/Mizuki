@@ -1,13 +1,12 @@
 package sh.astrid.mizuki.listeners.discord
 
-import org.bukkit.Bukkit
 import org.javacord.api.event.message.MessageCreateEvent
 import sh.astrid.mizuki.Discord
 import sh.astrid.mizuki.Mizuki
 import sh.astrid.mizuki.lib.Placeholder
-import sh.astrid.mizuki.lib.coloured
 import sh.astrid.mizuki.lib.getMessage
 import sh.astrid.mizuki.lib.pp
+import sh.astrid.mizuki.lib.toText
 import java.awt.Color
 
 class ChatListener {
@@ -20,7 +19,7 @@ class ChatListener {
         val config = Mizuki.instance.config
 
         val configuredChannel = config.getString("channelID")
-        val characterLimit = config.getInt("discordMessageLength")
+        val characterLimit = config.getLong("discordMessageLength")
         val messageNewLines = config.getBoolean("discordNewLines")
 
         // filter out bots
@@ -29,39 +28,31 @@ class ChatListener {
         if(configuredChannel.isNullOrEmpty()) return
         if(channel.id.toString() != configuredChannel) return
 
+        val server = event.server.get()
+        val user = event.messageAuthor.asUser().get()
         val contentMsg = getMessage("ingame.content")
 
         if(contentMsg.isEmpty()) return
 
-        val userRoles = event
-            .messageAuthor.asUser().get()
-            .getRoles(event.server.get())
-            .toMutableList()
-
-        val highestRole = userRoles[userRoles.size - 1]
-
-        /* TODO: Improve role colour grabbing
-        *  The users highest role might not be the colour they have as their name
-        * */
-
+        val highestRole = server.getHighestRole(user).get()
         var roleName = highestRole.name
         if(roleName == "@everyone") roleName = "Default"
 
+        val highestRoleColor = user.getRoleColor(server)
         var color = Color.GRAY
-        if(highestRole.color.isPresent)
-            color = highestRole.color.get()
+        if (highestRoleColor.isPresent)
+            color = highestRoleColor.get()
 
         // ty stackoverflow :)
         val rgba: Int = color.rgb shl 8 or color.alpha
-        val hex = String.format("#%08X", rgba)
-            .replace("FF", "")
+        val hex = String.format("#%08X", rgba).replace(Regex("(?<!^#)FF"), "").lowercase()
         val rank = "&$hex$roleName&r"
 
         var msgContent = event.readableMessageContent
 
         // only substring if needed
         if(msgContent.length > characterLimit)
-            msgContent.substring(0, characterLimit) + "..."
+            msgContent.substring(0, characterLimit.toInt()) + "..."
 
         // if new lines are disabled, remove them
         if(!messageNewLines)
@@ -79,6 +70,8 @@ class ChatListener {
 
         val parsedMsg = contentMsg.pp(*placeholders.toTypedArray())
 
-        Bukkit.broadcastMessage(parsedMsg.coloured())
+        Mizuki.instance.server.playerManager.playerList.forEach { player ->
+            player.sendMessage(parsedMsg.toText())
+        }
      }
 }

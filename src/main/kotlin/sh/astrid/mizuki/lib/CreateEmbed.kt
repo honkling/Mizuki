@@ -1,7 +1,7 @@
 package sh.astrid.mizuki.lib
 
-import org.bukkit.event.player.PlayerEvent
 import org.javacord.api.entity.message.embed.EmbedBuilder
+import sh.astrid.mizuki.listeners.PlayerEvent
 import java.awt.Color
 import java.util.regex.Matcher
 import java.util.regex.Pattern

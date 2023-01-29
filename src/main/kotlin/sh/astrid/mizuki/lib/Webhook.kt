@@ -1,17 +1,16 @@
 package sh.astrid.mizuki.lib
 
 import com.moandjiezana.toml.Toml
-import okhttp3.RequestBody.Companion.toRequestBody
+import net.minecraft.server.network.ServerPlayNetworkHandler
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.bukkit.event.player.AsyncPlayerChatEvent
-import org.bukkit.event.player.PlayerEvent
 import org.javacord.api.entity.message.MessageBuilder
 import org.javacord.api.entity.message.mention.AllowedMentionsBuilder
 import org.json.simple.JSONObject
 import org.json.simple.parser.JSONParser
 import sh.astrid.mizuki.Discord
 import sh.astrid.mizuki.Mizuki
+import sh.astrid.mizuki.listeners.PlayerEvent
 import java.util.*
 
 fun getWebhookURL(): String? {
@@ -72,16 +71,14 @@ fun buildMsg(event: PlayerEvent, key: String): MessageBuilder {
     val embedTable: Toml? = getMessage("$key.embed", isObject = true)
 
     val message = MessageBuilder()
-
-    // need to do this to parse placeholders like %message%
-    if(event.eventName == "AsyncPlayerChatEvent") event as AsyncPlayerChatEvent
+    println(listOf(embedTable, embedTable != null, embedTable?.isEmpty))
 
     if(embedTable != null && !embedTable.isEmpty) {
         val embed = createEmbed(key, event)
         message.setEmbed(embed)
     }
 
-    if(getMessage("$key.content").isNotEmpty()) {
+    else if(getMessage("$key.content").isNotEmpty()) {
         val notParsed = getMessage("$key.content")
         message.setContent(notParsed.parse(event))
     }
